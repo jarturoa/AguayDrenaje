@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+#pickle is an extension that helps you dump your model to a pkl file
 import pickle
 
 dataset = pd.read_csv('hiring.csv')
