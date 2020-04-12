@@ -44,7 +44,32 @@ The parser will look through the parameters that a user sends to your API. The p
 parser = reqparse.RequestParser()
 parser.add_argument('query')
 
+# TODO how to import the model and run a test on it ARTURO
+import tensorflow as tf
 
+# Recreate the exact same model purely from the file
+new_model = new_model = tf.keras.models.load_model('testSave')
+
+prediction = new_model.predict(X_test)
+
+import numpy as np
+
+
+db_prediction = np.column_stack([X_test,prediction])
+db_real = np.column_stack([X_test,y_test])
+
+np.set_printoptions(suppress=True)
+db_finalpred = ds_s.inverse_transform(db_prediction)
+db_finalreal = ds_s.inverse_transform(db_real)
+
+y_predicted = db_finalreal[:,17]
+y_real = db_finalpred[:,17]
+
+print(y_predicted)
+print(y_real)
+score = new_model.evaluate(X_test, y_test, verbose=0)
+print('Test loss:', score[0])
+print('Test real error:', score[1])
 
 
 

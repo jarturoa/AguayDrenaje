@@ -36,6 +36,7 @@ X = ds[:,0:17]
 y = ds[:,17]
 #divide dataset train validation test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
+
 # define the keras model
 #from keras.layers import LSTM
 #stadard
@@ -54,13 +55,97 @@ model.compile(loss='mean_squared_error', optimizer= 'adam', metrics=['mse', 'mea
 # fit the keras model on the dataset
 #use first one for final model for production
 #model.fit(X_train, y_train, epochs=2000, batch_size=12)
-model.fit(X_train, y_train, epochs=150, batch_size=12)
+model.fit(X_train, y_train, epochs=2000, batch_size=12)
 
 score = model.evaluate(X_test, y_test, verbose=0)
 print("%s: %.2f%%" % (model.metrics_names[1], score[1]*100))
 
+# TODO Save the model
+
+import tensorflow as tf
+model.save('testSave')
+
+# Recreate the exact same model purely from the file
+new_model = new_model = tf.keras.models.load_model('testSave')
+
+prediction = new_model.predict(X_test)
+
+import numpy as np
+
+#np.concatenate((a,b[:,None]),axis=1)
+
+#y_prediction = np.concatenate((X_test,ynew[:,None]),axis=1)
+db_prediction = np.column_stack([X_test,prediction])
+db_real = np.column_stack([X_test,y_test])
+
+np.set_printoptions(suppress=True)
+db_finalpred = ds_s.inverse_transform(db_prediction)
+db_finalreal = ds_s.inverse_transform(db_real)
+
+y_predicted = db_finalreal[:,17]
+y_real = db_finalpred[:,17]
+
+print(y_predicted)
+print(y_real)
+score = new_model.evaluate(X_test, y_test, verbose=0)
+print('Test loss:', score[0])
+print('Test real error:', score[1])
+
+"""Brought from notebook
+import numpy as np
+
+#np.concatenate((a,b[:,None]),axis=1)
+
+#y_prediction = np.concatenate((X_test,ynew[:,None]),axis=1)
+db_prediction = np.column_stack([X_test,ynew[:,-1]])
+db_real = np.column_stack([X_test,y_test[:,-1]])
+
+np.set_printoptions(suppress=True)
+db_finalpred = ds_s.inverse_transform(db_prediction)
+db_finalreal = ds_s.inverse_transform(db_real)
+
+y_predicted = db_finalreal[:,17]
+y_real = db_finalpred[:,17]
 
 """
+
+...
+
+"""tensorflow
+import tensorflow as tf
+
+#keras
+
+# Save the model
+model.save('path_to_my_model')
+
+# Recreate the exact same model purely from the file
+new_model = tf.save_model.load('path_to_my_model')
+
+
+"""
+
+
+"""PICKLE
+#PICKLE IS NOT WORKING FOR THE NUMBER OF CELLS IN THE DNN
+# Saving model to disk, you input what object how you want it named and write = wb
+#pickle.dump(model, open('modeltest.pkl','wb'))
+
+# Save the Modle to file in the current working directory
+
+Pkl_Filename = "model2.pkl"  
+
+with open(Pkl_Filename, 'wb') as file:  
+    pickle.dump(model, file, protocol=pickle.HIGHEST_PROTOCOL)
+
+# Loading model to compare the results
+with open('model2.pkl','rb') as file:
+    model = pickle.load(file)
+print(model.predict(X_test[0, :]))
+
+"""
+
+"""keras.models
 from keras.models import model_from_json
 
 # serialize model to JSON
@@ -90,7 +175,7 @@ print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
 """
 
 
-"""
+"""YAML
 USING YAML FILE IS NOT WORKING
 ValueError: Unknown initializer: GlorotUniform
 
@@ -121,24 +206,7 @@ score = loaded_model.evaluate(X_test, y_test, verbose=0)
 print("%s: %.2f%%" % (loaded_model.metrics_names[1], score[1]*100))
 """
 
-
-#PICKLE IS NOT WORKING FOR THE NUMBER OF CELLS IN THE DNN
-# Saving model to disk, you input what object how you want it named and write = wb
-#pickle.dump(model, open('modeltest.pkl','wb'))
-
-# Save the Modle to file in the current working directory
-
-Pkl_Filename = "model2.pkl"  
-
-with open(Pkl_Filename, 'wb') as file:  
-    pickle.dump(model, file, fix_imports=True)
-
-# Loading model to compare the results
-model = pickle.load(open('model2.pkl','rb'))
-print(model.predict(X_test[0, :]))
-
-
-"""
+"""joblib_file
 # Save RL_Model to file in the current working directory
 
 from sklearn.externals import joblib
@@ -152,7 +220,7 @@ joblib_model2
 
 """
 
-"""
+"""Original Example
 dataset = pd.read_csv('hiring.csv')
 
 dataset['experience'].fillna(0, inplace=True)
