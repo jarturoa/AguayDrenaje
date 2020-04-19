@@ -1,43 +1,55 @@
 import numpy as np
-from flask import Flask, request, jsonify, render_template
-import pickle
+from flask import Flask, jsonify, request, json
+import tensorflow as tf
+from numpy import array
+import pandas as pd
 
-#create my flask app
+
+
+
+# Recreate the exact same model purely from the file
+new_model = tf.keras.models.load_model('testSave')
+
+X_test = array([[0.0,0.6,0.506944,0.6,0.055236,0.374126,0.724907,0.199052,0.786765,0.302954,0.261838,0.031014,0.35467,0.223484,0.405913,1.0,0.034749]])
+
+
+
+#create my flask app Not much to say here. Set debug to False if you are deploying this API to production.
 app = Flask(__name__)
-#loading the pickel
-model = pickle.load(open('model.pkl', 'rb'))
 
-#this is your home page by defaul root page is / then it will render the template index.html
-@app.route('/')
-def home():
-    return render_template('index.html')
-"""
-i have also created the /predict wich is basically a post method I will be providing features to my model
-so that my model takes input and gives us an output
-"""
+    # routes
+@app.route('/', methods=['POST'])
 
-@app.route('/predict',methods=['POST'])
 def predict():
-    '''
-    For rendering results on HTML GUI
-    '''
-    #input from all the forms
-    #request allows you to store all the values from the textfield and store them in int_features
-    #change to double so that it can accept decimals
-    #int_features = [int(x) for x in request.form.values()]
-    int_features = [float(x) for x in request.form.values()]
-    #convert into an array
-    final_features = [np.array(int_features)]
+    # get data
+    data = request.get_json(force=True)
+
+    # convert data into dataframe
+    data.update((x, [y]) for x, y in data.items())
+    data_df = pd.DataFrame.from_dict(data)
+
+    #convert dataframe to numpy array
+    arr = data_df.to_numpy()
     
-    prediction = model.predict(final_features)
-    	
-    #I am finally getting the output
-    output = round(prediction[0], 2)
-    	
-    	
-    return output	
-    #return render_template('index.html', prediction_text='Yo popcorn ready, Qsuministrada is: {}'.format(output))
+    # predictions
+    result = new_model.predict(arr)
+
+    # send back to browser
+    output = {'results': int(result[0])}
+
+    # return data
+    return jsonify(results=output)
+
+if __name__ == '__main__':
+    app.run(port = 5000, debug=True)
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+
+
+
+
+
+
+
+
+

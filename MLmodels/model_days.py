@@ -26,7 +26,7 @@ import tensorflow as tf
 
 import seaborn as sns
 
-root_path = 'C:/Users/Arturo A/AguayDrenaje/preQData.csv'
+root_path = 'C:/Users/Arturo A/AguayDrenaje/dbCSV/preQData.csv'
 # load data
 def parse(x):
     return datetime.strptime(x, '%Y %m %d')
@@ -105,7 +105,18 @@ model.add(tf.keras.layers.Dense(1))
 model.compile(loss='mae', optimizer='adam')
 
 # fit network
-model.fit(X_train, y_train, epochs=50, batch_size=True, validation_data=(X_test, y_test), verbose=False, shuffle=False)
+model.fit(X_train, y_train, epochs=50, batch_size=True, validation_data=(X_test, y_test), verbose=True, shuffle=False)
+
+
+import tensorflow as tf
+model.save('ModeloDiarioSerial')
+
+new_model2 = tf.models.load('testDiario')
+
+# Recreate the exact same model purely from the file
+new_model = new_model = tf.keras.models.load_model('testDiario')
+
+prediction = new_model.predict(X_test)
 
 # make a prediction
 y_pred = model.predict(X_test)
