@@ -15,3 +15,4 @@ flask_jsonpify==1.5.0
 json5==0.9.0
 jsonschema==3.2.0
 pathlib==1.0.1
+setuptools==41.0.0
