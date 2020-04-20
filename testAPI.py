@@ -1,32 +1,51 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr 19 17:20:46 2020
-
-@author: ArturoA
-"""
-
+import numpy as np
 from flask import Flask, jsonify, request, json
+import tensorflow as tf
+from numpy import array
+import pandas as pd
 
-# local url
-url = 'http://127.0.0.1:5000/' # change to your url
-data = {'0': 0
-      , '1': 0.6
-      , '2': 0.506944
-      , '3': 0.6
-      , '4': 0.055236
-      , '5': 0.374126
-      , '6': 0.724907
-      , '7': 0.199052
-      , '8': 0.786765
-      , '9': 0.302954
-      , '10': 0.261838
-      , '11': 0.031014
-      , '12': 0.35467
-      , '13': 0.223484
-      , '14': 0.405913
-      , '15': 1
-      , '16': 0.034749}
-data = json.dumps(data)
-sent_request = request.post(url, data)
-print(send_request)
-print(send_request.json())
+
+
+
+#create my flask app Not much to say here. Set debug to False if you are deploying this API to production.
+app = Flask(__name__)
+
+
+
+# Recreate the exact same model purely from the file
+new_model = tf.keras.models.load_model('testSave')
+
+#X_test = array([[0.0,0.6,0.506944,0.6,0.055236,0.374126,0.724907,0.199052,0.786765,0.302954,0.261838,0.031014,0.35467,0.223484,0.405913,1.0,0.034749]])
+
+
+# routes
+@app.route('/predictMontly', methods=['POST'])
+
+def predict():
+    
+    # get data
+    data = request.get_json(force=True)
+
+    # convert data into dataframe
+    data.update((x, [y]) for x, y in data.items())
+    data_df = pd.DataFrame.from_dict(data)
+
+    #convert dataframe to numpy array
+    arr = data_df.to_numpy()
+    
+    # predictions
+    result = new_model.predict(arr)
+
+    # send back to browser
+    output = {'results': int(result[0])}
+
+    # return data
+    return jsonify(results=output)
+
+if __name__ == '__main__':
+    app.run(port = 5000, debug=True)
+
+
+#http://127.0.0.1:5000/predictMontly
+
+
