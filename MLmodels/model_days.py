@@ -7,9 +7,7 @@ Created on Fri Apr 10 19:53:48 2020
 
 from math import sqrt
 from numpy import concatenate
-from matplotlib import pyplot
 from datetime import datetime
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -24,25 +22,7 @@ from sklearn.metrics import mean_squared_error
 
 import tensorflow as tf
 
-import seaborn as sns
-
-root_path = 'C:/Users/Arturo A/AguayDrenaje/dbCSV/preQData.csv'
-# load data
-def parse(x):
-    return datetime.strptime(x, '%Y %m %d')
-
-dataset = read_csv(root_path,  parse_dates = [['year', 'month', 'day']], index_col=0, date_parser=parse)
-
-# drop the old index column named "No"
-dataset.drop('No', axis=1, inplace=True)
-
-# set date as index
-dataset.index.name = 'date'
-
-# check for nulls
-#display('-'*100)
-#display(dataset.isnull().any())
-
+dataset = read_csv("C:/Users/Arturo A/AguayDrenaje/dbCSV/preQData2.csv", parse_dates=['date'], index_col='date')
 
 # convert series to supervised learning
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
@@ -75,13 +55,14 @@ values = values.astype('float32')
 
 # normalize features
 scaler = MinMaxScaler(feature_range=(0, 1))
-scaled = scaler.fit_transform(values)
+scaled = scaler.fit(values)
+scaled = scaler.transform(values)
 
 # frame as supervised learning
 reframed = series_to_supervised(scaled, 1, 1)
 
 # drop columns we don't want to predict
-reframed.drop(reframed.columns[[35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67]], axis=1, inplace=True)
+reframed.drop(reframed.columns[[33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]], axis=1, inplace=True)
 
 # split into train and test sets
 values = reframed.values
@@ -108,7 +89,7 @@ model.compile(loss='mae', optimizer='adam')
 model.fit(X_train, y_train, epochs=50, batch_size=True, validation_data=(X_test, y_test), verbose=True, shuffle=False)
 
 
-import tensorflow as tf
+
 model.save('ModeloDiarioSerial')
 
 new_model2 = tf.models.load('testDiario')
